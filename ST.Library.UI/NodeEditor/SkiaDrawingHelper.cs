@@ -3,7 +3,7 @@ using System.Drawing;
 using SkiaSharp;
 
 namespace ST.Library.UI.NodeEditor {
-    internal static class SkiaDrawingHelper {
+    public static class SkiaDrawingHelper {
         public static SKColor ToSKColor(Color color) {
             return new SKColor(color.R, color.G, color.B, color.A);
         }
