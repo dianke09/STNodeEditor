@@ -11,6 +11,7 @@ using System.Threading;
 using System.ComponentModel;
 using System.Reflection;
 using System.IO.Compression;
+using SkiaSharp;
 /*
 MIT License
 
@@ -979,22 +980,21 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="nWidth">需要绘制宽度</param>
         /// <param name="nHeight">需要绘制高度</param>
         protected virtual void OnDrawGrid(DrawingTools dt, int nWidth, int nHeight) {
-            Graphics g = dt.Graphics;
-            using (Pen p_2 = new Pen(Color.FromArgb(65, this._GridColor))) {
-                using (Pen p_1 = new Pen(Color.FromArgb(30, this._GridColor))) {
-                    float nIncrement = (20 * this._CanvasScale);             //网格间的间隔 根据比例绘制
+            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+                using (var p1 = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(Color.FromArgb(30, this._GridColor)), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
+                using (var p2 = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(Color.FromArgb(65, this._GridColor)), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true }) {
+                    float nIncrement = (20 * this._CanvasScale);
                     int n = 5 - (int)(this._CanvasOffsetX / nIncrement);
                     for (float f = this._CanvasOffsetX % nIncrement; f < nWidth; f += nIncrement)
-                        g.DrawLine((n++ % 5 == 0 ? p_2 : p_1), f, 0, f, nHeight);
+                        canvas.DrawLine(f, 0, f, nHeight, (n++ % 5 == 0 ? p2 : p1));
                     n = 5 - (int)(this._CanvasOffsetY / nIncrement);
                     for (float f = this._CanvasOffsetY % nIncrement; f < nHeight; f += nIncrement)
-                        g.DrawLine((n++ % 5 == 0 ? p_2 : p_1), 0, f, nWidth, f);
-                    //原点两天线
-                    p_1.Color = Color.FromArgb(this._Nodes.Count == 0 ? 255 : 120, this._GridColor);
-                    g.DrawLine(p_1, this._CanvasOffsetX, 0, this._CanvasOffsetX, nHeight);
-                    g.DrawLine(p_1, 0, this._CanvasOffsetY, nWidth, this._CanvasOffsetY);
+                        canvas.DrawLine(0, f, nWidth, f, (n++ % 5 == 0 ? p2 : p1));
+                    p1.Color = SkiaDrawingHelper.ToSKColor(Color.FromArgb(this._Nodes.Count == 0 ? 255 : 120, this._GridColor));
+                    canvas.DrawLine(this._CanvasOffsetX, 0, this._CanvasOffsetX, nHeight, p1);
+                    canvas.DrawLine(0, this._CanvasOffsetY, nWidth, this._CanvasOffsetY, p1);
                 }
-            }
+            });
         }
         /// <summary>
         /// 当绘制 Node 时候发生
@@ -1145,12 +1145,15 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="dt">绘制工具</param>
         /// <param name="rectf">位于控件上的矩形区域</param>
         protected virtual void OnDrawSelectedRectangle(DrawingTools dt, RectangleF rectf) {
-            Graphics g = dt.Graphics;
-            SolidBrush brush = dt.SolidBrush;
-            dt.Pen.Color = this._SelectedRectangleColor;
-            g.DrawRectangle(dt.Pen, rectf.Left, rectf.Y, rectf.Width, rectf.Height);
-            brush.Color = Color.FromArgb(this._SelectedRectangleColor.A / 3, this._SelectedRectangleColor);
-            g.FillRectangle(brush, this.CanvasToControl(m_rect_select));
+            var fill = Color.FromArgb(this._SelectedRectangleColor.A / 3, this._SelectedRectangleColor);
+            Rectangle rect = this.CanvasToControl(m_rect_select);
+            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+                using (var stroke = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._SelectedRectangleColor), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
+                using (var bg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(fill), Style = SKPaintStyle.Fill, IsAntialias = true }) {
+                    canvas.DrawRect(rectf.Left, rectf.Top, rectf.Width, rectf.Height, stroke);
+                    canvas.DrawRect(rect.Left, rect.Top, rect.Width, rect.Height, bg);
+                }
+            });
         }
         /// <summary>
         /// 绘制超出视觉区域的 Node 位置提示信息
