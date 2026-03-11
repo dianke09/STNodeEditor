@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Collections;
+using SkiaSharp;
 /*
 MIT License
 
@@ -478,25 +479,22 @@ namespace ST.Library.UI.NodeEditor
         /// </summary>
         /// <param name="dt">绘制工具</param>
         protected virtual void OnDrawSearch(DrawingTools dt) {
-            Graphics g = dt.Graphics;
-            m_brush.Color = this._TitleColor;
-            g.FillRectangle(m_brush, 0, 0, this.Width, m_nItemHeight);
-            m_brush.Color = m_tbx.BackColor;
-            g.FillRectangle(m_brush, 5, 5, this.Width - 10, m_nItemHeight - 10);
-            m_pen.Color = this.ForeColor;
-            if (string.IsNullOrEmpty(m_str_search)) {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                g.DrawEllipse(m_pen, this.Width - 17, 8, 8, 8);
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                g.DrawLine(m_pen, this.Width - 13, 17, this.Width - 13, m_nItemHeight - 9);
-            } else {
-                m_pen.Color = this.ForeColor;
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                g.DrawEllipse(m_pen, this.Width - 20, 9, 10, 10);
-                g.DrawLine(m_pen, this.Width - 18, 11, this.Width - 12, 17);
-                g.DrawLine(m_pen, this.Width - 12, 11, this.Width - 18, 17);
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            }
+            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+                using (var title = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._TitleColor), Style = SKPaintStyle.Fill, IsAntialias = true })
+                using (var box = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(m_tbx.BackColor), Style = SKPaintStyle.Fill, IsAntialias = true })
+                using (var stroke = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this.ForeColor), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true }) {
+                    canvas.DrawRect(0, 0, this.Width, m_nItemHeight, title);
+                    canvas.DrawRect(5, 5, this.Width - 10, m_nItemHeight - 10, box);
+                    if (string.IsNullOrEmpty(m_str_search)) {
+                        canvas.DrawOval(new SKRect(this.Width - 17, 8, this.Width - 9, 16), stroke);
+                        canvas.DrawLine(this.Width - 13, 17, this.Width - 13, m_nItemHeight - 9, stroke);
+                    } else {
+                        canvas.DrawOval(new SKRect(this.Width - 20, 9, this.Width - 10, 19), stroke);
+                        canvas.DrawLine(this.Width - 18, 11, this.Width - 12, 17, stroke);
+                        canvas.DrawLine(this.Width - 12, 11, this.Width - 18, 17, stroke);
+                    }
+                }
+            });
         }
         /// <summary>
         /// 当开始绘制树节点的每一个节点时候发生
