@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 using System.ComponentModel;
+using SkiaSharp;
 /*
 MIT License
 
@@ -568,14 +569,19 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="dt">绘制工具</param>
         protected virtual void OnDrawTitle(DrawingTools dt) {
             Graphics g = dt.Graphics;
-            if (this._AutoColor)
-                m_brush.Color = this._STNode == null ? this._TitleColor : this._STNode.TitleColor;
-            else
-                m_brush.Color = this._TitleColor;
-            g.FillRectangle(m_brush, m_rect_title);
-            m_brush.Color = this._STNode == null ? this.ForeColor : this._STNode.ForeColor;
-            m_sf.Alignment = StringAlignment.Center;
-            g.DrawString(this._STNode == null ? this.Text : this._STNode.Title, this.Font, m_brush, m_rect_title, m_sf);
+            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+                using (var fill = new SKPaint { Style = SKPaintStyle.Fill, IsAntialias = true })
+                using (var text = new SKPaint { TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true, Style = SKPaintStyle.Fill }) {
+                    fill.Color = SkiaDrawingHelper.ToSKColor(this._AutoColor ? (this._STNode == null ? this._TitleColor : this._STNode.TitleColor) : this._TitleColor);
+                    canvas.DrawRect(m_rect_title.Left, m_rect_title.Top, m_rect_title.Width, m_rect_title.Height, fill);
+                    text.Color = SkiaDrawingHelper.ToSKColor(this._STNode == null ? this.ForeColor : this._STNode.ForeColor);
+                    var t = this._STNode == null ? this.Text : this._STNode.Title;
+                    var fm = text.FontMetrics;
+                    float y = m_rect_title.Top + (m_rect_title.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent;
+                    float x = m_rect_title.Left + (m_rect_title.Width - text.MeasureText(t)) / 2;
+                    canvas.DrawText(t ?? string.Empty, x, y, text);
+                }
+            });
 
             if (this._ReadOnlyModel) {
                 m_brush.Color = this.ForeColor;
