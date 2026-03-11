@@ -12,15 +12,6 @@ namespace ST.Library.UI.NodeEditor {
             return new SKRect(rect.Left, rect.Top, rect.Right, rect.Bottom);
         }
 
-        public static SKBitmap ToSKBitmap(Image image) {
-            if (image == null) return null;
-            using (var ms = new System.IO.MemoryStream()) {
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Position = 0;
-                return SKBitmap.Decode(ms);
-            }
-        }
-
         public static void RenderToGraphics(Graphics graphics, Size size, Action<SKCanvas> renderAction) {
             using (var bitmap = new SKBitmap(Math.Max(size.Width, 1), Math.Max(size.Height, 1), true))
             using (var canvas = new SKCanvas(bitmap)) {
