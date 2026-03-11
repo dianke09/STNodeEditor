@@ -6,6 +6,7 @@ using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections;
+using SkiaSharp;
 /*
 MIT License
 
@@ -581,11 +582,12 @@ namespace ST.Library.UI.NodeEditor
         /// </summary>
         /// <param name="dt">绘制工具</param>
         protected internal virtual void OnDrawNode(DrawingTools dt) {
-            dt.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            //Fill background
             if (this._BackColor.A != 0) {
-                dt.SolidBrush.Color = this._BackColor;
-                dt.Graphics.FillRectangle(dt.SolidBrush, this._Left, this._Top + this._TitleHeight, this._Width, this.Height - this._TitleHeight);
+                SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Owner.Size, canvas => {
+                    using (var bg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._BackColor), Style = SKPaintStyle.Fill, IsAntialias = true }) {
+                        canvas.DrawRect(this._Left, this._Top + this._TitleHeight, this._Width, this.Height - this._TitleHeight, bg);
+                    }
+                });
             }
             this.OnDrawTitle(dt);
             this.OnDrawBody(dt);
@@ -597,43 +599,38 @@ namespace ST.Library.UI.NodeEditor
         protected virtual void OnDrawTitle(DrawingTools dt) {
             m_sf.Alignment = StringAlignment.Center;
             m_sf.LineAlignment = StringAlignment.Center;
-            Graphics g = dt.Graphics;
-            SolidBrush brush = dt.SolidBrush;
-            if (this._TitleColor.A != 0) {
-                brush.Color = this._TitleColor;
-                g.FillRectangle(brush, this.TitleRectangle);
-            }
-            if (this._LockOption) {
-                //dt.Pen.Color = this.ForeColor;
-                brush.Color = this._ForeColor;
-                int n = this._Top + this._TitleHeight / 2 - 5;
-                g.FillRectangle(dt.SolidBrush, this._Left + 4, n + 0, 2, 4);
-                g.FillRectangle(dt.SolidBrush, this._Left + 6, n + 0, 2, 2);
-                g.FillRectangle(dt.SolidBrush, this._Left + 8, n + 0, 2, 4);
-                g.FillRectangle(dt.SolidBrush, this._Left + 3, n + 4, 8, 6);
-                //g.DrawLine(dt.Pen, this._Left + 6, n + 5, this._Left + 6, n + 7);
-                //g.DrawRectangle(dt.Pen, this._Left + 3, n + 0, 6, 3);
-                //g.DrawRectangle(dt.Pen, this._Left + 2, n + 3, 8, 6);
-                //g.DrawLine(dt.Pen, this._Left + 6, n + 5, this._Left + 6, n + 7);
-
-            }
-            if (this._LockLocation) {
-                //dt.Pen.Color = this.ForeColor;
-                brush.Color = this._ForeColor;
-                int n = this._Top + this._TitleHeight / 2 - 5;
-                g.FillRectangle(brush, this.Right - 9, n, 4, 4);
-                g.FillRectangle(brush, this.Right - 11, n + 4, 8, 2);
-                g.FillRectangle(brush, this.Right - 8, n + 6, 2, 4);
-                //g.DrawLine(dt.Pen, this.Right - 10, n + 6, this.Right - 4, n + 6);
-                //g.DrawLine(dt.Pen, this.Right - 10, n, this.Right - 4, n);
-                //g.DrawLine(dt.Pen, this.Right - 11, n + 6, this.Right - 3, n + 6);
-                //g.DrawLine(dt.Pen, this.Right - 7, n + 7, this.Right - 7, n + 9);
-            }
-            if (!string.IsNullOrEmpty(this._Title) && this._ForeColor.A != 0) {
-                brush.Color = this._ForeColor;
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                g.DrawString(this._Title, this._Font, brush, this.TitleRectangle, m_sf);
-            }
+            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Owner.Size, canvas => {
+                if (this._TitleColor.A != 0) {
+                    using (var title = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._TitleColor), Style = SKPaintStyle.Fill, IsAntialias = true }) {
+                        canvas.DrawRect(this.TitleRectangle.Left, this.TitleRectangle.Top, this.TitleRectangle.Width, this.TitleRectangle.Height, title);
+                    }
+                }
+                if (this._LockOption) {
+                    using (var fg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._ForeColor), Style = SKPaintStyle.Fill, IsAntialias = true }) {
+                        int n = this._Top + this._TitleHeight / 2 - 5;
+                        canvas.DrawRect(this._Left + 4, n + 0, 2, 4, fg);
+                        canvas.DrawRect(this._Left + 6, n + 0, 2, 2, fg);
+                        canvas.DrawRect(this._Left + 8, n + 0, 2, 4, fg);
+                        canvas.DrawRect(this._Left + 3, n + 4, 8, 6, fg);
+                    }
+                }
+                if (this._LockLocation) {
+                    using (var fg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._ForeColor), Style = SKPaintStyle.Fill, IsAntialias = true }) {
+                        int n = this._Top + this._TitleHeight / 2 - 5;
+                        canvas.DrawRect(this.Right - 9, n, 4, 4, fg);
+                        canvas.DrawRect(this.Right - 11, n + 4, 8, 2, fg);
+                        canvas.DrawRect(this.Right - 8, n + 6, 2, 4, fg);
+                    }
+                }
+                if (!string.IsNullOrEmpty(this._Title) && this._ForeColor.A != 0) {
+                    using (var text = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._ForeColor), TextSize = Math.Max(10f, this._Font.Size), IsAntialias = true }) {
+                        var fm = text.FontMetrics;
+                        float y = this.TitleRectangle.Top + (this.TitleRectangle.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent;
+                        float x = this.TitleRectangle.Left + (this.TitleRectangle.Width - text.MeasureText(this._Title)) / 2;
+                        canvas.DrawText(this._Title, x, y, text);
+                    }
+                }
+            });
         }
         /// <summary>
         /// 绘制Node主体部分 除去标题部分
@@ -737,15 +734,14 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="dt">绘制工具</param>
         /// <param name="op">指定的选项</param>
         protected virtual void OnDrawOptionText(DrawingTools dt, STNodeOption op) {
-            Graphics g = dt.Graphics;
-            SolidBrush brush = dt.SolidBrush;
-            if (op.IsInput) {
-                m_sf.Alignment = StringAlignment.Near;
-            } else {
-                m_sf.Alignment = StringAlignment.Far;
-            }
-            brush.Color = op.TextColor;
-            g.DrawString(op.Text, this.Font, brush, op.TextRectangle, m_sf);
+            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Owner.Size, canvas => {
+                using (var text = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(op.TextColor), TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
+                    var fm = text.FontMetrics;
+                    float y = op.TextRectangle.Top + (op.TextRectangle.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent;
+                    float x = op.IsInput ? op.TextRectangle.Left + 2 : op.TextRectangle.Right - text.MeasureText(op.Text) - 2;
+                    canvas.DrawText(op.Text ?? string.Empty, x, y, text);
+                }
+            });
         }
         /// <summary>
         /// 当计算Option连线点位置时候发生
