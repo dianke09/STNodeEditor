@@ -711,7 +711,7 @@ namespace ST.Library.UI.NodeEditor
                 }
 
                 if (this._ShowLocation) this.OnDrawNodeOutLocation(m_drawing_tools, this.Size, m_lst_node_out);
-                this.OnDrawAlert(g);
+                this.OnDrawAlert();
                 using (var skBitmap = SkiaDrawingHelper.ToSKBitmap(bmp)) {
                     if (skBitmap != null) canvas.DrawBitmap(skBitmap, 0, 0);
                 }
@@ -1114,34 +1114,33 @@ namespace ST.Library.UI.NodeEditor
         /// </summary>
         /// <param name="dt">绘制工具</param>
         protected virtual void OnDrawMark(DrawingTools dt) {
-            Graphics g = dt.Graphics;
-            SizeF sz = g.MeasureString(m_find.Mark, this.Font);             //确认文字需要的大小
-            Rectangle rect = new Rectangle(m_pt_in_control.X + 15,
-                m_pt_in_control.Y + 10,
-                (int)sz.Width + 6,
-                4 + (this.Font.Height + 4) * m_find.MarkLines.Length);      //sz.Height并没有考虑文字的行距 所以这里高度自己计算
+            if (m_canvas == null || string.IsNullOrEmpty(m_find.Mark)) return;
+            using (var textPaint = new SKPaint { TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
+                float textWidth = textPaint.MeasureText(m_find.Mark);
+                Rectangle rect = new Rectangle(m_pt_in_control.X + 15,
+                    m_pt_in_control.Y + 10,
+                    (int)Math.Ceiling(textWidth) + 6,
+                    4 + (this.Font.Height + 4) * m_find.MarkLines.Length);
 
-            if (rect.Right > this.Width) rect.X = this.Width - rect.Width;
-            if (rect.Bottom > this.Height) rect.Y = this.Height - rect.Height;
-            if (rect.X < 0) rect.X = 0;
-            if (rect.Y < 0) rect.Y = 0;
+                if (rect.Right > this.Width) rect.X = this.Width - rect.Width;
+                if (rect.Bottom > this.Height) rect.Y = this.Height - rect.Height;
+                if (rect.X < 0) rect.X = 0;
+                if (rect.Y < 0) rect.Y = 0;
 
-            dt.SolidBrush.Color = this._MarkBackColor;
-            g.SmoothingMode = SmoothingMode.None;
-            g.FillRectangle(dt.SolidBrush, rect);                             //绘制背景区域
-            rect.Width--; rect.Height--;
-            dt.Pen.Color = Color.FromArgb(255, this._MarkBackColor);
-            g.DrawRectangle(dt.Pen, rect);
-            dt.SolidBrush.Color = this._MarkForeColor;
+                using (var bg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._MarkBackColor), Style = SKPaintStyle.Fill, IsAntialias = false })
+                using (var border = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(Color.FromArgb(255, this._MarkBackColor)), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = false })
+                using (var fg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._MarkForeColor), TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
+                    m_canvas.DrawRect(rect.Left, rect.Top, rect.Width, rect.Height, bg);
+                    m_canvas.DrawRect(rect.Left, rect.Top, rect.Width - 1, rect.Height - 1, border);
 
-            m_sf.LineAlignment = StringAlignment.Center;
-            //g.SmoothingMode = SmoothingMode.HighQuality;
-            rect.X += 2; rect.Width -= 3;
-            rect.Height = this.Font.Height + 4;
-            int nY = rect.Y + 2;
-            for (int i = 0; i < m_find.MarkLines.Length; i++) {             //绘制文字
-                rect.Y = nY + i * (this.Font.Height + 4);
-                g.DrawString(m_find.MarkLines[i], this.Font, dt.SolidBrush, rect, m_sf);
+                    var fm = fg.FontMetrics;
+                    float baseY = rect.Y + 2 - fm.Ascent;
+                    float textX = rect.X + 4;
+                    for (int i = 0; i < m_find.MarkLines.Length; i++) {
+                        float y = baseY + i * (this.Font.Height + 4);
+                        m_canvas.DrawText(m_find.MarkLines[i], textX, y, fg);
+                    }
+                }
             }
         }
         /// <summary>
@@ -1150,38 +1149,39 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="dt">绘制工具</param>
         /// <param name="mi">匹配的磁铁信息</param>
         protected virtual void OnDrawMagnet(DrawingTools dt, MagnetInfo mi) {
-            if (this._ActiveNode == null) return;
-            Graphics g = dt.Graphics;
-            Pen pen = m_drawing_tools.Pen;
-            SolidBrush brush = dt.SolidBrush;
-            pen.Color = this._MagnetColor;
-            brush.Color = Color.FromArgb(this._MagnetColor.A / 3, this._MagnetColor);
-            g.SmoothingMode = SmoothingMode.None;
-            int nL = this._ActiveNode.Left, nMX = this._ActiveNode.Left + this._ActiveNode.Width / 2, nR = this._ActiveNode.Right;
-            int nT = this._ActiveNode.Top, nMY = this._ActiveNode.Top + this._ActiveNode.Height / 2, nB = this._ActiveNode.Bottom;
-            if (mi.XMatched) g.DrawLine(pen, this.CanvasToControl(mi.X, true), 0, this.CanvasToControl(mi.X, true), this.Height);
-            if (mi.YMatched) g.DrawLine(pen, 0, this.CanvasToControl(mi.Y, false), this.Width, this.CanvasToControl(mi.Y, false));
-            g.TranslateTransform(this._CanvasOffsetX, this._CanvasOffsetY); //移动坐标系
-            g.ScaleTransform(this._CanvasScale, this._CanvasScale);         //缩放绘图表面
-            if (mi.XMatched) {
-                //g.DrawLine(pen, this.CanvasToControl(mi.X, true), 0, this.CanvasToControl(mi.X, true), this.Height);
-                foreach (STNode n in this._Nodes) {
-                    if (n.Left == mi.X || n.Right == mi.X || n.Left + n.Width / 2 == mi.X) {
-                        //g.DrawRectangle(pen, n.Left, n.Top, n.Width - 1, n.Height - 1);
-                        g.FillRectangle(brush, n.Rectangle);
+            if (m_canvas == null || this._ActiveNode == null) return;
+            using (var line = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._MagnetColor), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = false })
+            using (var fill = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(Color.FromArgb(this._MagnetColor.A / 3, this._MagnetColor)), Style = SKPaintStyle.Fill, IsAntialias = false }) {
+                if (mi.XMatched) {
+                    float x = this.CanvasToControl(mi.X, true);
+                    m_canvas.DrawLine(x, 0, x, this.Height, line);
+                }
+                if (mi.YMatched) {
+                    float y = this.CanvasToControl(mi.Y, false);
+                    m_canvas.DrawLine(0, y, this.Width, y, line);
+                }
+
+                m_canvas.Save();
+                m_canvas.Translate(this._CanvasOffsetX, this._CanvasOffsetY);
+                m_canvas.Scale(this._CanvasScale, this._CanvasScale);
+
+                if (mi.XMatched) {
+                    foreach (STNode n in this._Nodes) {
+                        if (n.Left == mi.X || n.Right == mi.X || n.Left + n.Width / 2 == mi.X) {
+                            m_canvas.DrawRect(n.Left, n.Top, n.Width, n.Height, fill);
+                        }
                     }
                 }
-            }
-            if (mi.YMatched) {
-                //g.DrawLine(pen, 0, this.CanvasToControl(mi.Y, false), this.Width, this.CanvasToControl(mi.Y, false));
-                foreach (STNode n in this._Nodes) {
-                    if (n.Top == mi.Y || n.Bottom == mi.Y || n.Top + n.Height / 2 == mi.Y) {
-                        //g.DrawRectangle(pen, n.Left, n.Top, n.Width - 1, n.Height - 1);
-                        g.FillRectangle(brush, n.Rectangle);
+                if (mi.YMatched) {
+                    foreach (STNode n in this._Nodes) {
+                        if (n.Top == mi.Y || n.Bottom == mi.Y || n.Top + n.Height / 2 == mi.Y) {
+                            m_canvas.DrawRect(n.Left, n.Top, n.Width, n.Height, fill);
+                        }
                     }
                 }
+
+                m_canvas.Restore();
             }
-            g.ResetTransform();
         }
         /// <summary>
         /// 绘制选择的矩形区域
@@ -1205,25 +1205,25 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="sz">提示框边距</param>
         /// <param name="lstPts">超出视觉区域的 Node 位置信息</param>
         protected virtual void OnDrawNodeOutLocation(DrawingTools dt, Size sz, List<Point> lstPts) {
-            Graphics g = dt.Graphics;
-            SolidBrush brush = dt.SolidBrush;
-            brush.Color = this._LocationBackColor;
-            g.SmoothingMode = SmoothingMode.None;
-            if (lstPts.Count == this._Nodes.Count && this._Nodes.Count != 0) {  //如果超出个数和集合个数一样多 则全部超出 绘制外切矩形
-                g.FillRectangle(brush, this.CanvasToControl(this._CanvasValidBounds));
-            }
-            g.FillRectangle(brush, 0, 0, 4, sz.Height);                       //绘制四边背景
-            g.FillRectangle(brush, sz.Width - 4, 0, 4, sz.Height);
-            g.FillRectangle(brush, 4, 0, sz.Width - 8, 4);
-            g.FillRectangle(brush, 4, sz.Height - 4, sz.Width - 8, 4);
-            brush.Color = this._LocationForeColor;
-            foreach (var v in lstPts) {                                         //绘制点
-                var pt = this.CanvasToControl(v);
-                if (pt.X < 0) pt.X = 0;
-                if (pt.Y < 0) pt.Y = 0;
-                if (pt.X > sz.Width) pt.X = sz.Width - 4;
-                if (pt.Y > sz.Height) pt.Y = sz.Height - 4;
-                g.FillRectangle(brush, pt.X, pt.Y, 4, 4);
+            if (m_canvas == null) return;
+            using (var back = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._LocationBackColor), Style = SKPaintStyle.Fill, IsAntialias = false })
+            using (var fore = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._LocationForeColor), Style = SKPaintStyle.Fill, IsAntialias = false }) {
+                if (lstPts.Count == this._Nodes.Count && this._Nodes.Count != 0) {
+                    Rectangle r = this.CanvasToControl(this._CanvasValidBounds);
+                    m_canvas.DrawRect(r.Left, r.Top, r.Width, r.Height, back);
+                }
+                m_canvas.DrawRect(0, 0, 4, sz.Height, back);
+                m_canvas.DrawRect(sz.Width - 4, 0, 4, sz.Height, back);
+                m_canvas.DrawRect(4, 0, sz.Width - 8, 4, back);
+                m_canvas.DrawRect(4, sz.Height - 4, sz.Width - 8, 4, back);
+                foreach (var v in lstPts) {
+                    var pt = this.CanvasToControl(v);
+                    if (pt.X < 0) pt.X = 0;
+                    if (pt.Y < 0) pt.Y = 0;
+                    if (pt.X > sz.Width) pt.X = sz.Width - 4;
+                    if (pt.Y > sz.Height) pt.Y = sz.Height - 4;
+                    m_canvas.DrawRect(pt.X, pt.Y, 4, 4, fore);
+                }
             }
         }
         /// <summary>
@@ -1236,21 +1236,17 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="backColor">信息背景色</param>
         /// <param name="al">信息位置</param>
         protected virtual void OnDrawAlert(DrawingTools dt, Rectangle rect, string strText, Color foreColor, Color backColor, AlertLocation al) {
-            if (m_alpha_alert == 0) return;
-            Graphics g = dt.Graphics;
-            SolidBrush brush = dt.SolidBrush;
-
-            g.SmoothingMode = SmoothingMode.None;
-            brush.Color = backColor;
-            dt.Pen.Color = brush.Color;
-            g.FillRectangle(brush, rect);
-            g.DrawRectangle(dt.Pen, rect.Left, rect.Top, rect.Width - 1, rect.Height - 1);
-
-            brush.Color = foreColor;
-            m_sf.Alignment = StringAlignment.Center;
-            m_sf.LineAlignment = StringAlignment.Center;
-            g.SmoothingMode = SmoothingMode.HighQuality;
-            g.DrawString(strText, this.Font, brush, rect, m_sf);
+            if (m_alpha_alert == 0 || m_canvas == null) return;
+            using (var bg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(backColor), Style = SKPaintStyle.Fill, IsAntialias = false })
+            using (var border = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(backColor), Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = false })
+            using (var text = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(foreColor), TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
+                m_canvas.DrawRect(rect.Left, rect.Top, rect.Width, rect.Height, bg);
+                m_canvas.DrawRect(rect.Left, rect.Top, rect.Width - 1, rect.Height - 1, border);
+                var fm = text.FontMetrics;
+                float x = rect.Left + (rect.Width - text.MeasureText(strText)) / 2f;
+                float y = rect.Top + (rect.Height - (fm.Descent - fm.Ascent)) / 2f - fm.Ascent;
+                m_canvas.DrawText(strText, x, y, text);
+            }
         }
         /// <summary>
         /// 获取提示信息需要绘制的矩形区域
@@ -1259,10 +1255,13 @@ namespace ST.Library.UI.NodeEditor
         /// <param name="strText">需要绘制文本</param>
         /// <param name="al">信息位置</param>
         /// <returns>矩形区域</returns>
-        protected virtual Rectangle GetAlertRectangle(Graphics g, string strText, AlertLocation al) {
-            SizeF szf = g.MeasureString(m_str_alert, this.Font);
-            Size sz = new Size((int)Math.Round(szf.Width + 10), (int)Math.Round(szf.Height + 4));
-            Rectangle rect = new Rectangle(4, this.Height - sz.Height - 4, sz.Width, sz.Height);
+        protected virtual Rectangle GetAlertRectangle(string strText, AlertLocation al) {
+            using (var text = new SKPaint { TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
+                var fm = text.FontMetrics;
+                float w = text.MeasureText(m_str_alert);
+                float h = fm.Descent - fm.Ascent;
+                Size sz = new Size((int)Math.Round(w + 10), (int)Math.Round(h + 4));
+                Rectangle rect = new Rectangle(4, this.Height - sz.Height - 4, sz.Width, sz.Height);
 
             switch (al) {
                 case AlertLocation.Left:
@@ -1294,7 +1293,8 @@ namespace ST.Library.UI.NodeEditor
                     rect.X = this.Width - sz.Width - 4;
                     break;
             }
-            return rect;
+                return rect;
+            }
         }
 
         #endregion protected
@@ -1308,8 +1308,8 @@ namespace ST.Library.UI.NodeEditor
             this.Invalidate();
         }
 
-        internal void OnDrawAlert(Graphics g) {
-            m_rect_alert = this.GetAlertRectangle(g, m_str_alert, m_al);
+        internal void OnDrawAlert() {
+            m_rect_alert = this.GetAlertRectangle(m_str_alert, m_al);
             Color clr_fore = Color.FromArgb((int)((float)m_alpha_alert / 255 * m_forecolor_alert.A), m_forecolor_alert);
             Color clr_back = Color.FromArgb((int)((float)m_alpha_alert / 255 * m_backcolor_alert.A), m_backcolor_alert);
             this.OnDrawAlert(m_drawing_tools, m_rect_alert, m_str_alert, clr_fore, clr_back, m_al);
