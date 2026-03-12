@@ -692,6 +692,8 @@ namespace ST.Library.UI.NodeEditor
                     if (!string.IsNullOrEmpty(m_find.Mark)) this.OnDrawMark(m_drawing_tools);
                     break;
             }
+            return bitmap;
+        }
 
             if (this._ShowLocation) this.OnDrawNodeOutLocation(m_drawing_tools, this.Size, m_lst_node_out);
             this.OnDrawAlert();
