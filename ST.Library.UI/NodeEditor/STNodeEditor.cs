@@ -658,14 +658,22 @@ namespace ST.Library.UI.NodeEditor
 
         private void RenderEditorToCanvas(SKCanvas canvas) {
             if (canvas == null) return;
-            using (var bmp = this.RenderEditorToBitmap())
-            using (var skb = SkiaDrawingHelper.ToSKBitmap(bmp)) {
-                if (skb != null) canvas.DrawBitmap(skb, 0, 0);
+            using (var bitmap = this.RenderEditorToBitmap()) {
+                canvas.DrawBitmap(bitmap, 0, 0);
             }
         }
 
-        private Bitmap RenderEditorToBitmap() {
-            var bmp = new Bitmap(Math.Max(this.Width, 1), Math.Max(this.Height, 1));
+        private SKBitmap RenderEditorToBitmap() {
+            var bitmap = new SKBitmap(Math.Max(this.Width, 1), Math.Max(this.Height, 1), true);
+            using (var canvas = new SKCanvas(bitmap)) {
+                canvas.Clear(SkiaDrawingHelper.ToSKColor(this.BackColor));
+                this.RenderEditorToCanvasLegacy(canvas);
+            }
+            return bitmap;
+        }
+
+        private void RenderEditorToCanvasLegacy(SKCanvas canvas) {
+            using (var bmp = new Bitmap(Math.Max(this.Width, 1), Math.Max(this.Height, 1)))
             using (var g = Graphics.FromImage(bmp)) {
                 g.Clear(this.BackColor);
                 g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
@@ -704,8 +712,10 @@ namespace ST.Library.UI.NodeEditor
 
                 if (this._ShowLocation) this.OnDrawNodeOutLocation(m_drawing_tools, this.Size, m_lst_node_out);
                 this.OnDrawAlert(g);
+                using (var skBitmap = SkiaDrawingHelper.ToSKBitmap(bmp)) {
+                    if (skBitmap != null) canvas.DrawBitmap(skBitmap, 0, 0);
+                }
             }
-            return bmp;
         }
 
         protected override void OnMouseDown(MouseEventArgs e) {
