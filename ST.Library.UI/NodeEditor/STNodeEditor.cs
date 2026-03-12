@@ -652,54 +652,60 @@ namespace ST.Library.UI.NodeEditor
             base.OnPaintSurface(e);
             m_canvas = e.Surface.Canvas;
             m_canvas.Clear(SkiaDrawingHelper.ToSKColor(this.BackColor));
-            using (var bmp = new Bitmap(Math.Max(this.Width, 1), Math.Max(this.Height, 1)))
-            using (var g = Graphics.FromImage(bmp)) {
-                this.RenderEditorToGraphics(g);
-                using (var skb = SkiaDrawingHelper.ToSKBitmap(bmp)) {
-                    if (skb != null) m_canvas.DrawBitmap(skb, 0, 0);
-                }
-            }
+            this.RenderEditorToCanvas(m_canvas);
             m_canvas = null;
         }
 
-        private void RenderEditorToGraphics(Graphics g) {
-            g.Clear(this.BackColor);
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            m_drawing_tools.Graphics = g;
-
-            if (this._ShowGrid) this.OnDrawGrid(m_drawing_tools, this.Width, this.Height);
-
-            g.TranslateTransform(this._CanvasOffsetX, this._CanvasOffsetY);
-            g.ScaleTransform(this._CanvasScale, this._CanvasScale);
-
-            this.OnDrawConnectedLine(m_drawing_tools);
-            this.OnDrawNode(m_drawing_tools, this.ControlToCanvas(this.ClientRectangle));
-
-            if (m_ca == CanvasAction.ConnectOption) {
-                m_drawing_tools.Pen.Color = this._HighLineColor;
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                if (m_option_down.IsInput)
-                    this.DrawBezier(g, m_drawing_tools.Pen, m_pt_in_canvas, m_pt_dot_down, this._Curvature);
-                else
-                    this.DrawBezier(g, m_drawing_tools.Pen, m_pt_dot_down, m_pt_in_canvas, this._Curvature);
+        private void RenderEditorToCanvas(SKCanvas canvas) {
+            if (canvas == null) return;
+            using (var bmp = this.RenderEditorToBitmap())
+            using (var skb = SkiaDrawingHelper.ToSKBitmap(bmp)) {
+                if (skb != null) canvas.DrawBitmap(skb, 0, 0);
             }
+        }
 
-            g.ResetTransform();
+        private Bitmap RenderEditorToBitmap() {
+            var bmp = new Bitmap(Math.Max(this.Width, 1), Math.Max(this.Height, 1));
+            using (var g = Graphics.FromImage(bmp)) {
+                g.Clear(this.BackColor);
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                m_drawing_tools.Graphics = g;
 
-            switch (m_ca) {
-                case CanvasAction.MoveNode:
-                    if (this._ShowMagnet && this._ActiveNode != null) this.OnDrawMagnet(m_drawing_tools, m_mi);
-                    break;
-                case CanvasAction.SelectRectangle:
-                    this.OnDrawSelectedRectangle(m_drawing_tools, this.CanvasToControl(m_rect_select));
-                    break;
-                case CanvasAction.DrawMarkDetails:
-                    if (!string.IsNullOrEmpty(m_find.Mark)) this.OnDrawMark(m_drawing_tools);
-                    break;
+                if (this._ShowGrid) this.OnDrawGrid(m_drawing_tools, this.Width, this.Height);
+
+                g.TranslateTransform(this._CanvasOffsetX, this._CanvasOffsetY);
+                g.ScaleTransform(this._CanvasScale, this._CanvasScale);
+
+                this.OnDrawConnectedLine(m_drawing_tools);
+                this.OnDrawNode(m_drawing_tools, this.ControlToCanvas(this.ClientRectangle));
+
+                if (m_ca == CanvasAction.ConnectOption) {
+                    m_drawing_tools.Pen.Color = this._HighLineColor;
+                    g.SmoothingMode = SmoothingMode.HighQuality;
+                    if (m_option_down.IsInput)
+                        this.DrawBezier(g, m_drawing_tools.Pen, m_pt_in_canvas, m_pt_dot_down, this._Curvature);
+                    else
+                        this.DrawBezier(g, m_drawing_tools.Pen, m_pt_dot_down, m_pt_in_canvas, this._Curvature);
+                }
+
+                g.ResetTransform();
+
+                switch (m_ca) {
+                    case CanvasAction.MoveNode:
+                        if (this._ShowMagnet && this._ActiveNode != null) this.OnDrawMagnet(m_drawing_tools, m_mi);
+                        break;
+                    case CanvasAction.SelectRectangle:
+                        this.OnDrawSelectedRectangle(m_drawing_tools, this.CanvasToControl(m_rect_select));
+                        break;
+                    case CanvasAction.DrawMarkDetails:
+                        if (!string.IsNullOrEmpty(m_find.Mark)) this.OnDrawMark(m_drawing_tools);
+                        break;
+                }
+
+                if (this._ShowLocation) this.OnDrawNodeOutLocation(m_drawing_tools, this.Size, m_lst_node_out);
+                this.OnDrawAlert(g);
             }
-
-            if (this._ShowLocation) this.OnDrawNodeOutLocation(m_drawing_tools, this.Size, m_lst_node_out);
-            this.OnDrawAlert(g);
+            return bmp;
         }
 
         protected override void OnMouseDown(MouseEventArgs e) {
