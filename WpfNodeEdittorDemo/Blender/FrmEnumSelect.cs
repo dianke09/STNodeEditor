@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using System.Drawing;
+using SkiaSharp;
 using System.Windows.Forms;
 
 namespace WinNodeEditorDemo.Blender
@@ -48,13 +49,7 @@ namespace WinNodeEditorDemo.Blender
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
-            Graphics g = e.Graphics;
-            g.ScaleTransform(m_scale, m_scale);
-            Rectangle rect = new Rectangle(0, 0, this.Width, 20);
-            foreach (var v in m_lst) {
-                g.DrawString(v.ToString(), this.Font, Brushes.White, rect, m_sf);
-                rect.Y += rect.Height;
-            }
+            SkiaDrawingHelper.RenderToGraphics(e.Graphics, this.Size, canvas => { canvas.Scale(m_scale, m_scale); using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { float y=0; foreach (var v in m_lst) { var fm=text.FontMetrics; float ty = y + (20 - (fm.Descent - fm.Ascent))/2 - fm.Ascent; canvas.DrawText(v.ToString(),0,ty,text); y += 20; } } });
         }
 
         protected override void OnMouseClick(MouseEventArgs e) {
