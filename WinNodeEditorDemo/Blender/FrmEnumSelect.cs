@@ -5,6 +5,8 @@ using System.Text;
 
 using System.Drawing;
 using System.Windows.Forms;
+using ST.Library.UI.NodeEditor;
+using SkiaSharp;
 
 namespace WinNodeEditorDemo.Blender
 {
@@ -17,7 +19,6 @@ namespace WinNodeEditorDemo.Blender
         private int m_nWidth;
         private float m_scale;
         private List<object> m_lst = new List<object>();
-        private StringFormat m_sf;
 
         public Enum Enum { get; set; }
 
@@ -31,9 +32,6 @@ namespace WinNodeEditorDemo.Blender
             m_pt = pt;
             m_scale = scale;
             m_nWidth = nWidth;
-            m_sf = new StringFormat();
-            m_sf.LineAlignment = StringAlignment.Center;
-
             this.ShowInTaskbar = false;
             this.BackColor = Color.FromArgb(255, 34, 34, 34);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -48,13 +46,18 @@ namespace WinNodeEditorDemo.Blender
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
-            Graphics g = e.Graphics;
-            g.ScaleTransform(m_scale, m_scale);
-            Rectangle rect = new Rectangle(0, 0, this.Width, 20);
-            foreach (var v in m_lst) {
-                g.DrawString(v.ToString(), this.Font, Brushes.White, rect, m_sf);
-                rect.Y += rect.Height;
-            }
+            SkiaDrawingHelper.RenderToGraphics(e.Graphics, this.Size, canvas => {
+                canvas.Scale(m_scale, m_scale);
+                using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
+                    float y = 0;
+                    foreach (var v in m_lst) {
+                        var metrics = text.FontMetrics;
+                        float textY = y + (20 - (metrics.Descent - metrics.Ascent)) / 2 - metrics.Ascent;
+                        canvas.DrawText(v.ToString(), 0, textY, text);
+                        y += 20;
+                    }
+                }
+            });
         }
 
         protected override void OnMouseClick(MouseEventArgs e) {
