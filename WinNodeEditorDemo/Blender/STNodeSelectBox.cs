@@ -29,7 +29,7 @@ namespace WinNodeEditorDemo.Blender
         }
 
         protected override void OnPaint(DrawingTools dt) {
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => {
                 using (var bg = new SKPaint { Color = new SKColor(0, 0, 0, 80), Style = SKPaintStyle.Fill, IsAntialias = true })
                 using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true })
                 using (var arrow = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) {

@@ -58,40 +58,6 @@ namespace ST.Library.UI.NodeEditor
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
-            var borderColor = SkiaDrawingHelper.ToSKColor(m_descriptor.Control.AutoColor ? m_descriptor.Node.TitleColor : m_descriptor.Control.ItemSelectedColor);
-            var textColor = SkiaDrawingHelper.ToSKColor(m_descriptor.Control.ForeColor);
-            var selectedColor = SkiaDrawingHelper.ToSKColor(m_descriptor.Control.ItemSelectedColor);
-            var hoverColor = SkiaDrawingHelper.ToSKColor(m_descriptor.Control.ItemHoverColor);
-            var rowColor1 = SkiaDrawingHelper.ToSKColor(m_clr_item_1);
-            var rowColor2 = SkiaDrawingHelper.ToSKColor(m_clr_item_2);
-            var fontSize = Math.Max(10f, m_descriptor.Control.Font.Size);
-
-            SkiaDrawingHelper.RenderToGraphics(e.Graphics, this.Size, canvas => {
-                using (var fill = new SKPaint { Style = SKPaintStyle.Fill, IsAntialias = true })
-                using (var border = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1, Color = borderColor, IsAntialias = true })
-                using (var text = new SKPaint { Style = SKPaintStyle.Fill, Color = textColor, TextSize = fontSize, IsAntialias = true }) {
-                    float y = 0;
-                    string strVal = m_descriptor.GetStringFromValue();
-                    int nIndex = 0;
-                    foreach (var v in m_lst_item) {
-                        fill.Color = (nIndex++ % 2 == 0) ? rowColor1 : rowColor2;
-                        canvas.DrawRect(0, y, this.Width, m_nItemHeight, fill);
-                        if (v == m_item_hover) {
-                            fill.Color = hoverColor;
-                            canvas.DrawRect(0, y, this.Width, m_nItemHeight, fill);
-                        }
-                        if (v.ToString() == strVal) {
-                            fill.Color = selectedColor;
-                            canvas.DrawRect(4, y + 10, 5, 5, fill);
-                        }
-                        var metrics = text.FontMetrics;
-                        float textY = y + (m_nItemHeight - (metrics.Descent - metrics.Ascent)) / 2 - metrics.Ascent;
-                        canvas.DrawText(v.ToString(), 10, textY, text);
-                        y += m_nItemHeight;
-                    }
-                    canvas.DrawRect(0, 0, this.Width - 1, this.Height - 1, border);
-                }
-            });
         }
 
         protected override void OnMouseMove(MouseEventArgs e) {

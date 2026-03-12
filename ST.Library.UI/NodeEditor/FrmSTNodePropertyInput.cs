@@ -54,38 +54,6 @@ namespace ST.Library.UI
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
-            var strokeColor = SkiaDrawingHelper.ToSKColor(m_descriptor.Control.ForeColor);
-            var inputBackColor = m_tbx == null ? this.BackColor : m_tbx.BackColor;
-            var fillColor = SkiaDrawingHelper.ToSKColor(inputBackColor);
-            SkiaDrawingHelper.RenderToGraphics(e.Graphics, this.Size, canvas => {
-                using (var fill = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill, IsAntialias = true })
-                using (var stroke = new SKPaint { Color = strokeColor, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true }) {
-                    canvas.DrawRect(1, 1, this.Width - 2 - m_rect.Height, this.Height - 2, fill);
-                    canvas.DrawPoints(SKPointMode.Polygon, new[] {
-                        new SKPoint(this.Width - 21, this.Height - 2),
-                        new SKPoint(this.Width - 14, this.Height - 2),
-                        new SKPoint(this.Width - 14, this.Height - 8)
-                    }, fill);
-
-                    void Line(float x1, float y1, float x2, float y2) => canvas.DrawLine(x1, y1, x2, y2, stroke);
-                    Line(this.Width - 14, this.Height - 3, this.Width - 4, this.Height - 3);
-                    Line(this.Width - 4, this.Height - 3, this.Width - 4, 14);
-                    Line(this.Width - 8, 13, this.Width - 4, 13);
-                    Line(this.Width - 19, 11, this.Width - 4, 11);
-                    Line(this.Width - 19, 3, this.Width - 16, 3);
-                    Line(this.Width - 19, 6, this.Width - 16, 6);
-                    Line(this.Width - 19, 9, this.Width - 16, 9);
-                    Line(this.Width - 19, 3, this.Width - 19, 9);
-                    Line(this.Width - 13, 3, this.Width - 10, 3);
-                    Line(this.Width - 13, 6, this.Width - 10, 6);
-                    Line(this.Width - 13, 9, this.Width - 10, 9);
-                    Line(this.Width - 13, 3, this.Width - 13, 6);
-                    Line(this.Width - 10, 6, this.Width - 10, 9);
-                    Line(this.Width - 7, 3, this.Width - 4, 3);
-                    Line(this.Width - 7, 9, this.Width - 4, 9);
-                    Line(this.Width - 7, 3, this.Width - 7, 9);
-                }
-            });
         }
 
         void tbx_KeyDown(object sender, KeyEventArgs e) {

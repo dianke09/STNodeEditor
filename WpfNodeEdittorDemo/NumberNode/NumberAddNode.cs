@@ -68,7 +68,7 @@ namespace WinNodeEditorDemo.NumberNode
                 m_sf.Alignment = StringAlignment.Far;
                 strText = (m_nNum1 + m_nNum2).ToString();
             }
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Owner.Owner.Size, canvas => { using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { var fm = text.FontMetrics; float y = op.TextRectangle.Top + (op.TextRectangle.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float x = m_sf.Alignment == StringAlignment.Far ? op.TextRectangle.Right - text.MeasureText(strText) - 2 : op.TextRectangle.Left + 2; canvas.DrawText(strText, x, y, text); } });
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => { using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { var fm = text.FontMetrics; float y = op.TextRectangle.Top + (op.TextRectangle.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float x = m_sf.Alignment == StringAlignment.Far ? op.TextRectangle.Right - text.MeasureText(strText) - 2 : op.TextRectangle.Left + 2; canvas.DrawText(strText, x, y, text); } });
         }
     }
 }

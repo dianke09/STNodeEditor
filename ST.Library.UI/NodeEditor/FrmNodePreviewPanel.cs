@@ -90,11 +90,7 @@ namespace ST.Library.UI.NodeEditor
             m_rect_panel.Y = this.Top;
             m_region = new Region(new Rectangle(Point.Empty, this.Size));
             m_region.Exclude(m_rect_exclude);
-            using (Graphics g = this.CreateGraphics()) {
-                IntPtr h = m_region.GetHrgn(g);
-                FrmNodePreviewPanel.SetWindowRgn(this.Handle, h, false);
-                m_region.ReleaseHrgn(h);
-            }
+            FrmNodePreviewPanel.SetWindowRgn(this.Handle, IntPtr.Zero, false);
 
             this.MouseLeave += Event_MouseLeave;
             m_editor.MouseLeave += Event_MouseLeave;
@@ -121,24 +117,6 @@ namespace ST.Library.UI.NodeEditor
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
-            var border = SkiaDrawingHelper.ToSKColor(this.AutoBorderColor ? m_node.TitleColor : this.BorderColor);
-            SkiaDrawingHelper.RenderToGraphics(e.Graphics, this.Size, canvas => {
-                using (var stroke = new SKPaint { Color = border, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true })
-                using (var fill = new SKPaint { Color = border, Style = SKPaintStyle.Fill, IsAntialias = true })
-                using (var thick = new SKPaint { Color = border, Style = SKPaintStyle.Stroke, StrokeWidth = 2, IsAntialias = true }) {
-                    canvas.DrawRect(0, 0, this.Width - 1, this.Height - 1, stroke);
-                    canvas.DrawRect(m_rect_exclude.X - 1, m_rect_exclude.Y - 1, m_rect_exclude.Width + 2, m_rect_exclude.Height + 2, fill);
-                    Rectangle rect = this.RectangleToClient(m_rect_handle);
-                    rect.Y = (m_nHandleSize - 14) / 2;
-                    rect.X += rect.Y + 1;
-                    rect.Width = rect.Height = 14;
-                    canvas.DrawLine(rect.X + 4, rect.Y + 3, rect.X + 10, rect.Y + 3, thick);
-                    canvas.DrawLine(rect.X + 4, rect.Y + 6, rect.X + 10, rect.Y + 6, thick);
-                    canvas.DrawLine(rect.X + 4, rect.Y + 11, rect.X + 10, rect.Y + 11, thick);
-                    canvas.DrawLine(rect.X + 7, rect.Y + 7, rect.X + 7, rect.Y + 10, thick);
-                    canvas.DrawRect(rect.X, rect.Y, rect.Width - 1, rect.Height - 1, stroke);
-                }
-            });
         }
     }
 }

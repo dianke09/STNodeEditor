@@ -270,7 +270,7 @@ namespace ST.Library.UI.NodeEditor
             var textValue = this.GetStringFromValue();
             var backColor = SkiaDrawingHelper.ToSKColor(ctrl.ItemValueBackColor);
             var textColor = SkiaDrawingHelper.ToSKColor(this.Control.ForeColor);
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, ctrl.Size, canvas => {
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => {
                 using (var fill = new SKPaint { Color = backColor, Style = SKPaintStyle.Fill, IsAntialias = true })
                 using (var text = new SKPaint { Color = textColor, TextSize = Math.Max(10f, ctrl.Font.Size), IsAntialias = true }) {
                     canvas.DrawRect(rect.Left, rect.Top, rect.Width + 1, rect.Height + 1, fill);

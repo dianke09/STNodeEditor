@@ -37,7 +37,7 @@ namespace WinNodeEditorDemo.Blender
 
         protected override void OnPaint(DrawingTools dt) {
             //base.OnPaint(dt);
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => { using (var gray = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var black = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var textPaint = new SKPaint { Color = SKColors.LightGray, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { canvas.DrawRect(0,5,10,10,gray); var fm=textPaint.FontMetrics; float y=(20-(fm.Descent-fm.Ascent))/2-fm.Ascent; canvas.DrawText(this.Text ?? string.Empty,15,y,textPaint); if(this.Checked) canvas.DrawRect(2,7,6,6,black);} });
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => { using (var gray = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var black = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var textPaint = new SKPaint { Color = SKColors.LightGray, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { canvas.DrawRect(0,5,10,10,gray); var fm=textPaint.FontMetrics; float y=(20-(fm.Descent-fm.Ascent))/2-fm.Ascent; canvas.DrawText(this.Text ?? string.Empty,15,y,textPaint); if(this.Checked) canvas.DrawRect(2,7,6,6,black);} });
         }
     }
 }

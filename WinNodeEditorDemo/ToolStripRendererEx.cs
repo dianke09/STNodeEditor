@@ -25,27 +25,15 @@ namespace WinNodeEditorDemo
         }
 
         protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e) {
-            using (SolidBrush sb = new SolidBrush(Color.FromArgb(34, 34, 34))) {
-                SkiaDrawingHelper.RenderToGraphics(e.Graphics, e.ToolStrip.Size, canvas => { using (var p = new SKPaint { Color = new SKColor(34,34,34,255), Style = SKPaintStyle.Fill }) { canvas.DrawRect(e.AffectedBounds.Left, e.AffectedBounds.Top, e.AffectedBounds.Width, e.AffectedBounds.Height, p);} });
-            }
             base.OnRenderToolStripBackground(e);
         }
 
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) {
-            SkiaDrawingHelper.RenderToGraphics(e.Graphics, e.ToolStrip.Size, canvas => { using (var p = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1 }) { canvas.DrawRect(e.AffectedBounds.X, e.AffectedBounds.Y, e.AffectedBounds.Width - 1, e.AffectedBounds.Height - 1, p);} });
             base.OnRenderToolStripBorder(e);
         }
 
-        //protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) {
-        //    using (SolidBrush sb = new SolidBrush(Color.FromArgb(50, 50, 50))) {
-        //        e.Graphics.FillRectangle(sb, e.AffectedBounds);
-        //    }
-        //    base.OnRenderImageMargin(e);
-        //}
-
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
             e.TextColor = e.Item.Selected ? Color.White : Color.LightGray;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             e.TextRectangle = new Rectangle(e.TextRectangle.Left, e.TextRectangle.Top, e.TextRectangle.Width, 30);
             base.OnRenderItemText(e);
         }
@@ -56,27 +44,12 @@ namespace WinNodeEditorDemo
         }
 
         protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e) {
-            Point ptEnd = new Point(e.Item.ContentRectangle.X + e.Item.Width / 2, e.Item.ContentRectangle.Y);
-            using (LinearGradientBrush lgb = new LinearGradientBrush(e.Item.ContentRectangle.Location, ptEnd, Color.Transparent, Color.Gray)) {
-                lgb.WrapMode = WrapMode.TileFlipX;
-                using (Pen p = new Pen(lgb)) {
-                    SkiaDrawingHelper.RenderToGraphics(e.Graphics, e.ToolStrip.Size, canvas => { using (var sp = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true }) { canvas.DrawLine(e.Item.ContentRectangle.Left, e.Item.ContentRectangle.Top, e.Item.ContentRectangle.Right, ptEnd.Y, sp);} });
-                }
-            }
-            //e.Graphics.DrawLine(Pens.Gray, e.Item.ContentRectangle.Location, new Point(e.Item.ContentRectangle.Right, ptEnd.Y));
             base.OnRenderSeparator(e);
         }
 
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e) {
-            if (e.Item.Selected)
-                SkiaDrawingHelper.RenderToGraphics(e.Graphics, e.ToolStrip.Size, canvas => { using (var p = new SKPaint { Color = new SKColor(52,86,141,255), Style = SKPaintStyle.Fill }) { canvas.DrawRect(e.Item.ContentRectangle.Left, e.Item.ContentRectangle.Top, e.Item.ContentRectangle.Width, e.Item.ContentRectangle.Height, p);} });
-            else
-                base.OnRenderMenuItemBackground(e);
+            base.OnRenderMenuItemBackground(e);
         }
 
-        //protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e) {
-        //    //base.OnRenderItemImage(e);
-        //    e.Graphics.DrawImage(e.Image, e.ImageRectangle.X, e.ImageRectangle.Y, 17, 17);
-        //}
     }
 }

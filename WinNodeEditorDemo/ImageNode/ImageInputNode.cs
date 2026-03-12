@@ -39,7 +39,7 @@ namespace WinNodeEditorDemo.ImageNode
         protected override void OnDrawBody(DrawingTools dt) {
             base.OnDrawBody(dt);
             Rectangle rect = new Rectangle(this.Left + 10, this.Top + 30, 140, 80);
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Owner.Size, canvas => { using (var bg = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) { canvas.DrawRect(rect.Left, rect.Top, rect.Width, rect.Height, bg); if (m_img_draw != null) { using (var bmp = SkiaDrawingHelper.ToSKBitmap(m_img_draw)) { if (bmp != null) canvas.DrawBitmap(bmp, new SKRect(rect.Left, rect.Top, rect.Right, rect.Bottom)); } } } });
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => { using (var bg = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) { canvas.DrawRect(rect.Left, rect.Top, rect.Width, rect.Height, bg); if (m_img_draw != null) { using (var bmp = SkiaDrawingHelper.ToSKBitmap(m_img_draw)) { if (bmp != null) canvas.DrawBitmap(bmp, new SKRect(rect.Left, rect.Top, rect.Right, rect.Bottom)); } } } });
         }
     }
     /// <summary>
@@ -76,7 +76,7 @@ namespace WinNodeEditorDemo.ImageNode
 
         protected override void OnDrawValueRectangle(DrawingTools dt) {
             base.OnDrawValueRectangle(dt);              //在STNodePropertyGrid绘制此属性区域时候将"打开"按钮绘制上去
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Control.Size, canvas => { using (var bg = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var tx = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Control.Font.Size), IsAntialias = true }) { canvas.DrawRect(m_rect_open.Left, m_rect_open.Top, m_rect_open.Width, m_rect_open.Height, bg); var fm = tx.FontMetrics; float y = m_rect_open.Top + (m_rect_open.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float x = m_rect_open.Left + (m_rect_open.Width - tx.MeasureText("+")) / 2; canvas.DrawText("+", x, y, tx);} });
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => { using (var bg = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var tx = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Control.Font.Size), IsAntialias = true }) { canvas.DrawRect(m_rect_open.Left, m_rect_open.Top, m_rect_open.Width, m_rect_open.Height, bg); var fm = tx.FontMetrics; float y = m_rect_open.Top + (m_rect_open.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float x = m_rect_open.Left + (m_rect_open.Width - tx.MeasureText("+")) / 2; canvas.DrawText("+", x, y, tx);} });
         }
     }
 }

@@ -196,9 +196,9 @@ namespace ST.Library.UI.NodeEditor
         }
 
         protected internal virtual void OnPaint(DrawingTools dt) {
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+            if (dt.Canvas != null) {
                 using (var bg = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._BackColor), Style = SKPaintStyle.Fill, IsAntialias = true }) {
-                    canvas.DrawRect(0, 0, this.Width, this.Height, bg);
+                    dt.Canvas.DrawRect(0, 0, this.Width, this.Height, bg);
                 }
                 if (!string.IsNullOrEmpty(this._Text)) {
                     using (var text = new SKPaint { Color = SkiaDrawingHelper.ToSKColor(this._ForeColor), TextSize = Math.Max(10f, this._Font.Size), IsAntialias = true }) {
@@ -206,10 +206,10 @@ namespace ST.Library.UI.NodeEditor
                         float y = (this.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent;
                         float w = text.MeasureText(this._Text);
                         float x = (this.Width - w) / 2;
-                        canvas.DrawText(this._Text, x, y, text);
+                        dt.Canvas.DrawText(this._Text, x, y, text);
                     }
                 }
-            });
+            }
             if (this.Paint != null) this.Paint(this, new STNodeControlPaintEventArgs(dt));
         }
 

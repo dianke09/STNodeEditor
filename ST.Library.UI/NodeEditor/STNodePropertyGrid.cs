@@ -328,35 +328,35 @@ namespace ST.Library.UI.NodeEditor
 
         private void SetItemRectangle() {
             int nw_p = 0, nw_h = 0;
-            using (Graphics g = this.CreateGraphics()) {
+            using (var paint = new SKPaint { TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {
                 foreach (var v in m_lst_item) {
-                    SizeF szf = g.MeasureString(v.Name, this.Font);
-                    if (szf.Width > nw_p) nw_p = (int)Math.Ceiling(szf.Width);
+                    float w = paint.MeasureText(v.Name ?? string.Empty);
+                    if (w > nw_p) nw_p = (int)Math.Ceiling(w);
                 }
                 for (int i = 0; i < m_KeysString.Length - 1; i++) {
-                    SizeF szf = g.MeasureString(m_KeysString[i], this.Font);
-                    if (szf.Width > nw_h) nw_h = (int)Math.Ceiling(szf.Width);
+                    float w = paint.MeasureText(m_KeysString[i] ?? string.Empty);
+                    if (w > nw_h) nw_h = (int)Math.Ceiling(w);
                 }
-                nw_p += 5; nw_h += 5;
-                nw_p = Math.Min(nw_p, this.Width >> 1);
-                m_nInfoLeft = Math.Min(nw_h, this.Width >> 1);
-
-                int nTitleHeight = this._ShowTitle ? m_nTitleHeight : 0;
-                for (int i = 0; i < m_lst_item.Count; i++) {
-                    STNodePropertyDescriptor item = m_lst_item[i];
-                    Rectangle rect = new Rectangle(0, i * m_item_height + nTitleHeight, this.Width, m_item_height);
-                    item.Rectangle = rect;
-                    rect.Width = nw_p;
-                    item.RectangleL = rect;
-                    rect.X = rect.Right;
-                    rect.Width = this.Width - rect.Left - 1;
-                    rect.Inflate(-4, -4);
-                    item.RectangleR = rect;
-                    item.OnSetItemLocation();
-                }
-                m_nPropertyVHeight = m_lst_item.Count * m_item_height;
-                if (this._ShowTitle) m_nPropertyVHeight += m_nTitleHeight;
             }
+            nw_p += 5; nw_h += 5;
+            nw_p = Math.Min(nw_p, this.Width >> 1);
+            m_nInfoLeft = Math.Min(nw_h, this.Width >> 1);
+
+            int nTitleHeight = this._ShowTitle ? m_nTitleHeight : 0;
+            for (int i = 0; i < m_lst_item.Count; i++) {
+                STNodePropertyDescriptor item = m_lst_item[i];
+                Rectangle rect = new Rectangle(0, i * m_item_height + nTitleHeight, this.Width, m_item_height);
+                item.Rectangle = rect;
+                rect.Width = nw_p;
+                item.RectangleL = rect;
+                rect.X = rect.Right;
+                rect.Width = this.Width - rect.Left - 1;
+                rect.Inflate(-4, -4);
+                item.RectangleR = rect;
+                item.OnSetItemLocation();
+            }
+            m_nPropertyVHeight = m_lst_item.Count * m_item_height;
+            if (this._ShowTitle) m_nPropertyVHeight += m_nTitleHeight;
         }
 
         #endregion

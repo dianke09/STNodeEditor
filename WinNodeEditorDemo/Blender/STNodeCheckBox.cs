@@ -36,7 +36,7 @@ namespace WinNodeEditorDemo.Blender
         }
 
         protected override void OnPaint(DrawingTools dt) {
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => {
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => {
                 using (var gray = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true })
                 using (var black = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Fill, IsAntialias = true })
                 using (var textPaint = new SKPaint { Color = SKColors.LightGray, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) {

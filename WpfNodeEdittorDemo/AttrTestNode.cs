@@ -89,7 +89,7 @@ namespace WinNodeEditorDemo
         protected override void OnDrawValueRectangle(DrawingTools dt) {
             base.OnDrawValueRectangle(dt);//先采用默认的绘制 并再绘制颜色预览
             var color = SkiaDrawingHelper.ToSKColor((Color)this.GetValue(null));
-            SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Control.Size, canvas => { using (var fill = new SKPaint { Color = color, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var stroke = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true }) { canvas.DrawRect(m_rect.Left, m_rect.Top, m_rect.Width, m_rect.Height, fill); canvas.DrawRect(m_rect.Left, m_rect.Top, m_rect.Width, m_rect.Height, stroke);} });
+            SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => { using (var fill = new SKPaint { Color = color, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var stroke = new SKPaint { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true }) { canvas.DrawRect(m_rect.Left, m_rect.Top, m_rect.Width, m_rect.Height, fill); canvas.DrawRect(m_rect.Left, m_rect.Top, m_rect.Width, m_rect.Height, stroke);} });
         }
 
         protected override void OnMouseClick(MouseEventArgs e) {

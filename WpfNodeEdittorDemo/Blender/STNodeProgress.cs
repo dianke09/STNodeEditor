@@ -33,7 +33,7 @@ namespace WinNodeEditorDemo.Blender
 
         protected override void OnPaint(DrawingTools dt) {
             base.OnPaint(dt);
-            float progress=(float)this._Value/100; SkiaDrawingHelper.RenderToGraphics(dt.Graphics, this.Size, canvas => { using (var bg = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var fg = new SKPaint { Color = SKColors.CornflowerBlue, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { canvas.DrawRect(0,0,this.Width,this.Height,bg); canvas.DrawRect(0,0,this.Width*progress,this.Height,fg); var fm=text.FontMetrics; float y=(this.Height-(fm.Descent-fm.Ascent))/2-fm.Ascent; canvas.DrawText(this.Text ?? string.Empty,2,y,text); var pct=progress.ToString("F2"); canvas.DrawText(pct,this.Width-text.MeasureText(pct)-2,y,text);} });
+            float progress=(float)this._Value/100; SkiaDrawingHelper.RenderToCanvas(dt.Canvas, canvas => { using (var bg = new SKPaint { Color = SKColors.Gray, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var fg = new SKPaint { Color = SKColors.CornflowerBlue, Style = SKPaintStyle.Fill, IsAntialias = true }) using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, this.Font.Size), IsAntialias = true }) { canvas.DrawRect(0,0,this.Width,this.Height,bg); canvas.DrawRect(0,0,this.Width*progress,this.Height,fg); var fm=text.FontMetrics; float y=(this.Height-(fm.Descent-fm.Ascent))/2-fm.Ascent; canvas.DrawText(this.Text ?? string.Empty,2,y,text); var pct=progress.ToString("F2"); canvas.DrawText(pct,this.Width-text.MeasureText(pct)-2,y,text);} });
 
         }
 

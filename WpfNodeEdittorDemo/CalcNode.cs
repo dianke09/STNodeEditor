@@ -34,7 +34,7 @@ namespace WinNodeEditorDemo
             ctrl.Paint += (s, e) => {
                 m_sf.Alignment = StringAlignment.Far;
                 STNodeControl c = s as STNodeControl;
-                SkiaDrawingHelper.RenderToGraphics(e.DrawingTools.Graphics, c.Size, canvas => { using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, ctrl.Font.Size), IsAntialias = true }) { var fm = text.FontMetrics; float y = (c.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float w = text.MeasureText("0"); canvas.DrawText("0", c.Width - w - 2, y, text); } });
+                SkiaDrawingHelper.RenderToCanvas(e.DrawingTools.Canvas, canvas => { using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, ctrl.Font.Size), IsAntialias = true }) { var fm = text.FontMetrics; float y = (c.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float w = text.MeasureText("0"); canvas.DrawText("0", c.Width - w - 2, y, text); } });
             };
 
             string[] strs = { //按钮文本
@@ -58,7 +58,7 @@ namespace WinNodeEditorDemo
                 if (i == 8) ctrl.Paint += (s, e) => {
                     m_sf.Alignment = StringAlignment.Center;
                     STNodeControl c = s as STNodeControl;
-                    SkiaDrawingHelper.RenderToGraphics(e.DrawingTools.Graphics, c.Size, canvas => { using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, ctrl.Font.Size), IsAntialias = true }) { var fm = text.FontMetrics; float y = (c.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float w = text.MeasureText("_"); canvas.DrawText("_", (c.Width - w) / 2, y, text); } });
+                    SkiaDrawingHelper.RenderToCanvas(e.DrawingTools.Canvas, canvas => { using (var text = new SKPaint { Color = SKColors.White, TextSize = Math.Max(10f, ctrl.Font.Size), IsAntialias = true }) { var fm = text.FontMetrics; float y = (c.Height - (fm.Descent - fm.Ascent)) / 2 - fm.Ascent; float w = text.MeasureText("_"); canvas.DrawText("_", (c.Width - w) / 2, y, text); } });
                 };
                 ctrl.MouseClick += (s, e) => System.Windows.Forms.MessageBox.Show(((STNodeControl)s).Text);
             }

@@ -21,18 +21,9 @@ namespace ST.Library.UI.NodeEditor {
             }
         }
 
-        public static void RenderToGraphics(Graphics graphics, Size size, Action<SKCanvas> renderAction) {
-            using (var bitmap = new SKBitmap(Math.Max(size.Width, 1), Math.Max(size.Height, 1), true))
-            using (var canvas = new SKCanvas(bitmap)) {
-                canvas.Clear(SKColors.Transparent);
-                renderAction(canvas);
-                using (var image = SKImage.FromBitmap(bitmap))
-                using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-                using (var ms = new System.IO.MemoryStream(data.ToArray()))
-                using (var gdiImage = Image.FromStream(ms)) {
-                    graphics.DrawImageUnscaled(gdiImage, 0, 0);
-                }
-            }
+        public static void RenderToCanvas(SKCanvas canvas, Action<SKCanvas> renderAction) {
+            if (canvas == null || renderAction == null) return;
+            renderAction(canvas);
         }
     }
 }
