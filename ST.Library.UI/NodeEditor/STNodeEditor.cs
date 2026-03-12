@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.IO.Compression;
 using SkiaSharp;
+using SkiaSharp.Views.Desktop;
 /*
 MIT License
 
@@ -45,7 +46,7 @@ SOFTWARE.
  */
 namespace ST.Library.UI.NodeEditor
 {
-    public class STNodeEditor : Control
+    public class STNodeEditor : SKControl
     {
         private const UInt32 WM_MOUSEHWHEEL = 0x020E;
         protected static readonly Type m_type_node = typeof(STNode);
